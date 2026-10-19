@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Al-Pairus - Custom RPG Stat Tracker</title>
-  <meta name="description" content="A real-time Dark Fantasy RPG dashboard for players and Game Master to track Health, Toxicity, and Mobs.">
+  <title>Al-Pairus - Gestore Combattimento e Statistiche RPG</title>
+  <meta name="description" content="Dashboard Dark Fantasy in tempo reale per giocatori e Game Master per gestire Salute, Tossicità, Caratteristiche, Dadi e Mostri.">
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,140 +14,141 @@
   <!-- Stylesheet -->
   <link rel="stylesheet" href="styles.css">
 
-  <!-- PeerJS for zero-config P2P instant internet sync -->
+  <!-- PeerJS per sincronizzazione P2P via WebRTC su Internet a configurazione zero -->
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 </head>
 <body>
-  <!-- Ambient Audio & Sound Synthesizer -->
+  <!-- Stelle e particelle ambientali -->
   <div class="ambient-stars" aria-hidden="true"></div>
 
-  <!-- App Header -->
+  <!-- Header Applicazione -->
   <header class="app-header">
     <div class="brand-zone">
       <div class="sigil-icon">⚔️</div>
       <div class="brand-text">
         <h1 class="app-title">AL-PAIRUS</h1>
-        <span class="app-subtitle">Real-Time Combat & Stat Tracker</span>
+        <span class="app-subtitle">Gestore Combattimento e Statistiche</span>
       </div>
     </div>
 
     <div class="header-status-zone">
       <div class="sync-badge" id="syncStatusBadge">
         <span class="status-pulse-dot"></span>
-        <span id="syncStatusText">Connecting...</span>
+        <span id="syncStatusText">Connessione...</span>
       </div>
 
       <div class="room-pill" id="roomPill">
-        <span class="room-label">ROOM:</span>
+        <span class="room-label">STANZA:</span>
         <span class="room-id" id="displayRoomId">default</span>
-        <button class="copy-link-btn" id="copyShareBtn" title="Copy invitation link for players">🔗 Share</button>
+        <button class="copy-link-btn" id="copyShareBtn" title="Copia link d'invito per i compagni">🔗 Condividi</button>
       </div>
 
       <div class="header-actions">
-        <button class="icon-btn" id="soundToggleBtn" title="Toggle Sound Effects">🔊</button>
-        <button class="icon-btn" id="switchRoleBtn" title="Switch Role / Leave">🎭 Switch Role</button>
-        <button class="icon-btn" id="settingsBtn" title="Connection Settings">⚙️</button>
+        <button class="icon-btn highlight" id="diceRollerBtn" title="Lancia Dadi">🎲 Dadi</button>
+        <button class="icon-btn" id="soundToggleBtn" title="Attiva/Disattiva Effetti Sonori">🔊</button>
+        <button class="icon-btn" id="switchRoleBtn" title="Cambia Personaggio">🎭 Cambia Ruolo</button>
+        <button class="icon-btn" id="settingsBtn" title="Impostazioni di Rete e Passcode">⚙️</button>
       </div>
     </div>
   </header>
 
-  <!-- Main Container -->
+  <!-- Contenitore Principale -->
   <main class="app-main">
 
-    <!-- VIEW 1: LOBBY / ROLE SELECTION -->
+    <!-- VISTA 1: LOBBY / SELEZIONE PERSONAGGIO -->
     <section id="lobbyView" class="view-panel active-view">
       <div class="parchment-card lobby-card">
         <div class="card-ornament top-ornament"></div>
-        <h2 class="card-title">Enter the Realm</h2>
-        <p class="card-desc">Choose your campaign room and select your character.</p>
+        <h2 class="card-title">Entra nel Regno</h2>
+        <p class="card-desc">Inserisci il codice della stanza e seleziona il tuo personaggio.</p>
 
         <form id="lobbyForm" class="lobby-form" onsubmit="return false;">
           <div class="form-group">
-            <label for="roomInput">Campaign Room Code</label>
+            <label for="roomInput">Codice Stanza Campagna</label>
             <div class="input-with-button">
-              <input type="text" id="roomInput" value="realm-of-shadows" placeholder="e.g. dragon-keep" spellcheck="false" required>
-              <button type="button" class="btn-subtle" id="randomRoomBtn" title="Generate random room">🎲</button>
+              <input type="text" id="roomInput" value="realm-of-shadows" placeholder="es. fortezza-di-ferro" spellcheck="false" required>
+              <button type="button" class="btn-subtle" id="randomRoomBtn" title="Genera codice casuale">🎲</button>
             </div>
-            <small class="form-tip">Share this exact room code with your party to play together.</small>
+            <small class="form-tip">Condividi questo codice con Federico e il tuo gruppo per giocare sincronizzati.</small>
           </div>
 
           <div class="role-grid-section">
-            <label>Select Your Character</label>
+            <label>Seleziona il Tuo Personaggio</label>
             <div class="role-selection-grid">
               
-              <!-- Kassandra Option -->
+              <!-- Opzione Kassandra -->
               <div class="role-card" data-role="player1" tabindex="0">
                 <h3 class="role-name" id="lobbyP1Name">Kassandra</h3>
-                <div class="role-select-indicator">Select</div>
+                <div class="role-select-indicator">Seleziona</div>
               </div>
 
-              <!-- Yoru Option -->
+              <!-- Opzione Yoru -->
               <div class="role-card" data-role="player2" tabindex="0">
                 <h3 class="role-name" id="lobbyP2Name">Yoru</h3>
-                <div class="role-select-indicator">Select</div>
+                <div class="role-select-indicator">Seleziona</div>
               </div>
 
-              <!-- Federico Option -->
+              <!-- Opzione Federico (GM) -->
               <div class="role-card gm-card" data-role="gm" tabindex="0">
                 <h3 class="role-name">Federico</h3>
-                <div class="role-select-indicator">Passcode Required</div>
+                <div class="role-select-indicator">Codice Richiesto</div>
               </div>
 
             </div>
           </div>
 
-          <!-- GM PIN Entry (Revealed only when GM is selected) -->
+          <!-- Inserimento PIN GM (Visibile solo se si sceglie Federico) -->
           <div class="gm-pin-container hidden" id="gmPinContainer">
-            <label for="gmPinInput">GM Master Passcode</label>
+            <label for="gmPinInput">Passcode Master del Game Master</label>
             <div class="input-with-button">
-              <input type="password" id="gmPinInput" placeholder="Enter PIN (Default: 1234)" autocomplete="current-password">
-              <button type="button" class="btn-primary" id="confirmGmBtn">Enter as GM</button>
+              <input type="password" id="gmPinInput" placeholder="Inserisci PIN (Predefinito: 1234)" autocomplete="current-password">
+              <button type="button" class="btn-primary" id="confirmGmBtn">Entra come GM</button>
             </div>
-            <small class="form-tip">Default passcode is <code>1234</code>. You can change it anytime in GM Settings.</small>
+            <small class="form-tip">Il codice predefinito è <code>1234</code>. Puoi modificarlo in Impostazioni.</small>
           </div>
         </form>
         <div class="card-ornament bottom-ornament"></div>
       </div>
     </section>
 
-    <!-- VIEW 2: PLAYER SCREEN (Private View) -->
+    <!-- VISTA 2: SCHERMO GIOCATORE (Kassandra o Yoru) -->
     <section id="playerView" class="view-panel">
       <div class="player-container">
         
-        <!-- Player Status Header -->
+        <!-- Intestazione Scheda -->
         <div class="sheet-header parchment-card">
           <div class="character-identity">
             <div class="char-title-row">
               <h2 class="character-name" id="playerCharName">Kassandra</h2>
-              <button class="edit-name-btn" id="renameCharBtn" title="Change Character Name">✏️</button>
+              <button class="edit-name-btn" id="renameCharBtn" title="Modifica Nome">✏️</button>
             </div>
           </div>
 
           <div class="turn-status-badge">
-            <span class="turn-num-label">TURN</span>
+            <span class="turn-num-label">TURNO</span>
             <span class="turn-num" id="playerTurnCount">1</span>
           </div>
         </div>
 
-        <!-- Combat Dashboard Grid -->
+        <!-- Griglia Statistiche di Combattimento (PF & Tossicità) -->
         <div class="player-stats-grid">
 
-          <!-- HEALTH POINTS CARD -->
+          <!-- SCHEDA PUNTI FERITA -->
           <div class="parchment-card stat-card health-card">
             <div class="stat-card-header">
               <div class="stat-icon-title">
                 <span class="stat-symbol">❤️</span>
-                <span class="stat-title">Health Points</span>
+                <span class="stat-title">Punti Ferita</span>
               </div>
               <div class="hp-numeric-display">
                 <span class="hp-current" id="playerHpCurrent">8</span>
                 <span class="hp-divider">/</span>
                 <span class="hp-max" id="playerHpMax">8</span>
-                <button class="icon-subtle-btn" id="editMaxHpBtn" title="Edit Max HP">⚙️</button>
+                <button class="icon-subtle-btn" id="editMaxHpBtn" title="Modifica PF Massimi">⚙️</button>
               </div>
             </div>
 
-            <!-- Health Bar -->
+            <!-- Barra Salute -->
             <div class="meter-wrapper">
               <div class="meter-track health-track">
                 <div class="meter-fill health-fill" id="playerHpBar" style="width: 100%;"></div>
@@ -156,7 +157,7 @@
               <div class="hp-percent-label" id="playerHpPercent">100%</div>
             </div>
 
-            <!-- Quick Adjust Buttons -->
+            <!-- Pulsanti Rapidi PF -->
             <div class="quick-adjust-group">
               <button class="adjust-chip dmg" data-delta="-5">-5</button>
               <button class="adjust-chip dmg" data-delta="-1">-1</button>
@@ -164,20 +165,20 @@
               <button class="adjust-chip heal" data-delta="+5">+5</button>
             </div>
 
-            <!-- Custom Amount Modifier -->
+            <!-- Modificatore con Valore Personalizzato -->
             <div class="custom-modifier-row">
-              <input type="number" id="hpCustomAmount" min="1" max="999" placeholder="Amount" value="1">
-              <button class="btn-mod dmg-btn" id="dealDamageBtn">⚔️ Damage</button>
-              <button class="btn-mod heal-btn" id="applyHealBtn">✨ Heal</button>
+              <input type="number" id="hpCustomAmount" min="1" max="999" placeholder="Valore" value="1">
+              <button class="btn-mod dmg-btn" id="dealDamageBtn">⚔️ Danno</button>
+              <button class="btn-mod heal-btn" id="applyHealBtn">✨ Cura</button>
             </div>
           </div>
 
-          <!-- TOXICITY GAUGE CARD (0 to 10 scale) -->
+          <!-- SCHEDA TOSSICITÀ (Scala 0 a 10) -->
           <div class="parchment-card stat-card toxicity-card">
             <div class="stat-card-header">
               <div class="stat-icon-title">
                 <span class="stat-symbol">🧪</span>
-                <span class="stat-title">Toxicity</span>
+                <span class="stat-title">Tossicità</span>
               </div>
               <div class="toxicity-numeric-display">
                 <span class="tox-current" id="playerToxCurrent">0</span>
@@ -185,102 +186,201 @@
               </div>
             </div>
 
-            <!-- 10 Alchemical Vials / Segments -->
+            <!-- 10 Fiale Alchemiche -->
             <div class="vials-container" id="playerVialsContainer" role="meter" aria-valuenow="0" aria-valuemin="0" aria-valuemax="10">
-              <!-- Dynamically populated with 10 vials -->
+              <!-- Generate dinamicamente in JS -->
             </div>
 
-            <!-- Quick Toxicity Adjustment -->
+            <!-- Controlli Rapidi Tossicità -->
             <div class="toxicity-controls">
-              <button class="tox-btn dec" id="decToxBtn" title="Decrease Toxicity by 1">-1 Tox</button>
-              <button class="tox-btn inc" id="incToxBtn" title="Increase Toxicity by 1">+1 Tox</button>
-              <button class="tox-btn max" id="maxToxBtn" title="Set to Max Toxicity (10)">Max (10)</button>
-              <button class="tox-btn purge" id="purgeToxBtn" title="Purge to 0">Purge (0)</button>
+              <button class="tox-btn dec" id="decToxBtn" title="Diminuisci di 1">-1 Toss</button>
+              <button class="tox-btn inc" id="incToxBtn" title="Aumenta di 1">+1 Toss</button>
+              <button class="tox-btn max" id="maxToxBtn" title="Imposta a Tossicità Massima (10)">Massima (10)</button>
+              <button class="tox-btn purge" id="purgeToxBtn" title="Azzera Tossicità a 0">Azzera (0)</button>
             </div>
           </div>
 
         </div>
 
-        <!-- END TURN ACTION HERO -->
+        <!-- ABILITÀ SPECIALE: CONTRATTO MOTORE CHIRURGICO (Attiva solo per Kassandra) -->
+        <div class="parchment-card engine-contract-card hidden" id="kassandraEngineCard">
+          <div class="engine-header">
+            <div class="engine-title-zone">
+              <span class="engine-cog-icon">⚙️</span>
+              <div>
+                <h3 class="engine-title">CONTRATTO: Motore Chirurgico</h3>
+                <span class="engine-subtitle">Il Mostro nella Macchina &bull; Trascendenza della Carne</span>
+              </div>
+            </div>
+            <div class="gear-status-badge" id="engineGearBadge">Spento</div>
+          </div>
+
+          <p class="engine-lore">
+            Un dispositivo alieno di metallo vivo si è fuso con la carne e il sangue di Kassandra, manifestando la propria volontà attraverso continue deformazioni corporee.
+          </p>
+
+          <div class="gear-buttons-grid">
+            <!-- Marcia 1 -->
+            <button class="gear-btn gear-1" id="btnGear1" type="button">
+              <div class="gear-btn-top">
+                <span class="gear-num">Marcia 1</span>
+                <span class="gear-cost">+4 Tossicità</span>
+              </div>
+              <div class="gear-desc">1 Modifica biomeccanica &bull; Ridistribuisci 2 punti &bull; <strong>-1 PF all'inizio di ogni turno</strong></div>
+            </button>
+
+            <!-- Marcia 2 -->
+            <button class="gear-btn gear-2" id="btnGear2" type="button">
+              <div class="gear-btn-top">
+                <span class="gear-num">Marcia 2</span>
+                <span class="gear-cost">+1 Tossicità</span>
+              </div>
+              <div class="gear-desc">+4 Punti Ferita &bull; <strong>-1 PF all'inizio di ogni turno</strong></div>
+            </button>
+
+            <!-- Marcia 3 -->
+            <button class="gear-btn gear-3" id="btnGear3" type="button">
+              <div class="gear-btn-top">
+                <span class="gear-num">Marcia 3</span>
+                <span class="gear-cost">+1 Tossicità</span>
+              </div>
+              <div class="gear-desc">1 Modifica biomeccanica &bull; Ridistribuisci 2 punti &bull; <strong>-1d4 PF all'inizio di ogni turno</strong></div>
+            </button>
+
+            <!-- Rito di Carne e Ferro -->
+            <button class="gear-btn gear-rite" id="btnRiteOfFlesh" type="button">
+              <div class="gear-btn-top">
+                <span class="gear-num">Rito di Carne e Ferro</span>
+                <span class="gear-cost">Disattiva Motore</span>
+              </div>
+              <div class="gear-desc">Annulla modifiche &bull; Rigenera arti persi &bull; <strong>Salute al MAX &bull; Tossicità al MAX</strong></div>
+            </button>
+          </div>
+
+          <!-- Modifiche Biomeccaniche Note -->
+          <div class="modifications-tracker">
+            <label for="biomechNotesInput">Modifiche Biomeccaniche Attive</label>
+            <input type="text" id="biomechNotesInput" placeholder="es. Lame retrattili sugli avambracci, occhi di ferro..." value="">
+          </div>
+        </div>
+
+        <!-- SCHEDA ATTRIBUTI & POINT BUY (Per Kassandra e Yoru) -->
+        <div class="parchment-card attributes-card">
+          <div class="attributes-header">
+            <div class="attr-title-area">
+              <span class="attr-icon">📊</span>
+              <div>
+                <h3 class="attr-heading">Caratteristiche & Modificatori</h3>
+                <span class="attr-subheading">Clicca su un modificatore per effettuare una prova (1d20 + Mod)</span>
+              </div>
+            </div>
+            <div class="points-budget-box">
+              <span class="points-label">Punti Totali:</span>
+              <span class="points-value" id="totalPointsSpent">26</span> / 27
+              <button class="btn-subtle btn-xs" id="resetAttributesBtn" title="Reimposta attributi">Reimposta</button>
+            </div>
+          </div>
+
+          <!-- Tabella Attributi D&D / Point Buy -->
+          <div class="attributes-table-wrapper">
+            <table class="attributes-table">
+              <thead>
+                <tr>
+                  <th>Caratteristica</th>
+                  <th>Punteggio Base</th>
+                  <th>Bonus Razziale</th>
+                  <th>Totale</th>
+                  <th>Modificatore</th>
+                  <th>Costo Punti</th>
+                </tr>
+              </thead>
+              <tbody id="attributesTableBody">
+                <!-- Generato dinamicamente in JS: Forza, Destrezza, Costituzione, Intelligenza, Saggezza, Carisma -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- PULSANTE EROE: CONCLUDI TURNO -->
         <div class="end-turn-banner parchment-card">
           <div class="end-turn-info">
-            <h3 class="turn-action-title">Conclude Your Turn</h3>
+            <h3 class="turn-action-title">Concludi il tuo Turno</h3>
             <p class="turn-action-desc">
-              Finishing your action reduces your <strong>Toxicity by 2 points</strong> (clamped at 0) and increments your combat turn counter.
+              Terminare l'azione riduce la <strong>Tossicità di 2 punti</strong> (bloccata a 0) e avanza il contatore del combattimento.
             </p>
           </div>
           <button class="btn-epic-turn" id="endTurnBtn">
             <span class="turn-btn-glow"></span>
             <span class="turn-btn-icon">⏳</span>
-            <span class="turn-btn-text">END TURN (-2 TOX)</span>
+            <span class="turn-btn-text">CONCLUDI TURNO (-2 TOSS)</span>
           </button>
         </div>
 
-        <!-- Personal Combat Event Log -->
+        <!-- Cronache Personali di Combattimento -->
         <div class="parchment-card combat-log-card">
           <div class="log-header">
-            <h4>📜 Personal Chronicle</h4>
-            <button class="btn-text-only" id="clearPlayerLogBtn">Clear</button>
+            <h4>📜 Cronache di Combattimento</h4>
+            <button class="btn-text-only" id="clearPlayerLogBtn">Svuota</button>
           </div>
           <ul class="log-list" id="playerCombatLog">
-            <li class="log-entry system-entry">You joined the session. Stand ready.</li>
+            <li class="log-entry system-entry">Sei entrato nella sessione. Pronti al combattimento.</li>
           </ul>
         </div>
 
       </div>
     </section>
 
-    <!-- VIEW 3: GAME MASTER SCREEN (Federico's View) -->
+    <!-- VISTA 3: SCHERMO GAME MASTER (Federico) -->
     <section id="gmView" class="view-panel">
       <div class="gm-container">
 
-        <!-- GM Command Bar -->
+        <!-- Barra di Comando Master -->
         <div class="gm-command-bar parchment-card">
           <div class="gm-title-area">
             <span class="gm-crown">👑</span>
             <div>
-              <h2 class="gm-heading">Master of the Realm: Federico</h2>
-              <span class="gm-subheading">Live Overseer & Combat Arbiter</span>
+              <h2 class="gm-heading">Signore del Regno: Federico</h2>
+              <span class="gm-subheading">Osservatore in Tempo Reale & Arbitro del Conflitto</span>
             </div>
           </div>
           <div class="gm-quick-stats">
             <div class="gm-stat-pill">
-              <span class="label">Party:</span>
-              <span class="value" id="gmPartyCount">2 Players</span>
+              <span class="label">Gruppo:</span>
+              <span class="value" id="gmPartyCount">2 Giocatori</span>
             </div>
             <div class="gm-stat-pill">
-              <span class="label">Mobs:</span>
-              <span class="value" id="gmMobCount">0 Active</span>
+              <span class="label">Mostri:</span>
+              <span class="value" id="gmMobCount">0 Attivi</span>
             </div>
-            <button class="btn-subtle" id="gmResetPartyBtn" title="Reset all stats to default">🔄 Reset Round</button>
+            <button class="btn-subtle" id="gmResetPartyBtn" title="Azzera round e tossicità">🔄 Azzera Round</button>
           </div>
         </div>
 
-        <!-- Real-Time Party Overwatch -->
+        <!-- Monitoraggio Giocatori in Tempo Reale -->
         <div class="gm-section">
           <div class="section-header">
-            <h3 class="section-title">🛡️ Live Player Overwatch</h3>
-            <span class="section-tag">Instant Real-Time Stream</span>
+            <h3 class="section-title">🛡️ Monitoraggio Giocatori dal Vivo</h3>
+            <span class="section-tag">Streaming P2P Sincronizzato</span>
           </div>
 
           <div class="party-monitor-grid">
             
-            <!-- Kassandra GM Card -->
+            <!-- Scheda Kassandra GM -->
             <div class="parchment-card party-member-card" id="gmCardPlayer1">
               <div class="party-card-top">
                 <div class="player-brief">
                   <div>
                     <h4 class="member-name" id="gmP1Name">Kassandra</h4>
-                    <span class="member-turn" id="gmP1Turn">Turn 1</span>
+                    <span class="member-turn" id="gmP1Turn">Turno 1</span>
                   </div>
                 </div>
                 <div class="live-pulse-badge">LIVE</div>
               </div>
 
-              <!-- P1 HP View & GM Overrides -->
+              <!-- Vista Salute & Controlli Master -->
               <div class="gm-stat-block">
                 <div class="gm-stat-row">
-                  <span class="gm-stat-label">Health</span>
+                  <span class="gm-stat-label">Salute</span>
                   <span class="gm-stat-val" id="gmP1HpLabel">8 / 8</span>
                 </div>
                 <div class="meter-track health-track small">
@@ -291,44 +391,44 @@
                   <button class="gm-chip dmg" data-target="player1" data-action="hp" data-val="-1">-1</button>
                   <button class="gm-chip heal" data-target="player1" data-action="hp" data-val="+1">+1</button>
                   <button class="gm-chip heal" data-target="player1" data-action="hp" data-val="+5">+5</button>
-                  <button class="gm-chip edit" data-target="player1" data-action="custom-hp">✏️</button>
+                  <button class="gm-chip edit" data-target="player1" data-action="custom-hp" title="Modifica PF Massimi">✏️</button>
                 </div>
               </div>
 
-              <!-- P1 Toxicity View & GM Overrides -->
+              <!-- Vista Tossicità & Controlli Master -->
               <div class="gm-stat-block">
                 <div class="gm-stat-row">
-                  <span class="gm-stat-label">Toxicity</span>
+                  <span class="gm-stat-label">Tossicità</span>
                   <span class="gm-stat-val tox-val" id="gmP1ToxLabel">0 / 10</span>
                 </div>
                 <div class="meter-track tox-track small">
                   <div class="meter-fill tox-fill" id="gmP1ToxBar" style="width: 0%;"></div>
                 </div>
                 <div class="gm-override-row">
-                  <button class="gm-chip tox-down" data-target="player1" data-action="tox" data-val="-2">-2 Turn</button>
+                  <button class="gm-chip tox-down" data-target="player1" data-action="tox" data-val="-2">-2 Turno</button>
                   <button class="gm-chip tox-down" data-target="player1" data-action="tox" data-val="-1">-1</button>
                   <button class="gm-chip tox-up" data-target="player1" data-action="tox" data-val="+1">+1</button>
-                  <button class="gm-chip tox-purge" data-target="player1" data-action="tox" data-val="0">Purge</button>
+                  <button class="gm-chip tox-purge" data-target="player1" data-action="tox" data-val="0">Azzera</button>
                 </div>
               </div>
             </div>
 
-            <!-- Yoru GM Card -->
+            <!-- Scheda Yoru GM -->
             <div class="parchment-card party-member-card" id="gmCardPlayer2">
               <div class="party-card-top">
                 <div class="player-brief">
                   <div>
                     <h4 class="member-name" id="gmP2Name">Yoru</h4>
-                    <span class="member-turn" id="gmP2Turn">Turn 1</span>
+                    <span class="member-turn" id="gmP2Turn">Turno 1</span>
                   </div>
                 </div>
                 <div class="live-pulse-badge">LIVE</div>
               </div>
 
-              <!-- P2 HP View & GM Overrides -->
+              <!-- Vista Salute & Controlli Master -->
               <div class="gm-stat-block">
                 <div class="gm-stat-row">
-                  <span class="gm-stat-label">Health</span>
+                  <span class="gm-stat-label">Salute</span>
                   <span class="gm-stat-val" id="gmP2HpLabel">7 / 7</span>
                 </div>
                 <div class="meter-track health-track small">
@@ -339,24 +439,24 @@
                   <button class="gm-chip dmg" data-target="player2" data-action="hp" data-val="-1">-1</button>
                   <button class="gm-chip heal" data-target="player2" data-action="hp" data-val="+1">+1</button>
                   <button class="gm-chip heal" data-target="player2" data-action="hp" data-val="+5">+5</button>
-                  <button class="gm-chip edit" data-target="player2" data-action="custom-hp">✏️</button>
+                  <button class="gm-chip edit" data-target="player2" data-action="custom-hp" title="Modifica PF Massimi">✏️</button>
                 </div>
               </div>
 
-              <!-- P2 Toxicity View & GM Overrides -->
+              <!-- Vista Tossicità & Controlli Master -->
               <div class="gm-stat-block">
                 <div class="gm-stat-row">
-                  <span class="gm-stat-label">Toxicity</span>
+                  <span class="gm-stat-label">Tossicità</span>
                   <span class="gm-stat-val tox-val" id="gmP2ToxLabel">0 / 10</span>
                 </div>
                 <div class="meter-track tox-track small">
                   <div class="meter-fill tox-fill" id="gmP2ToxBar" style="width: 0%;"></div>
                 </div>
                 <div class="gm-override-row">
-                  <button class="gm-chip tox-down" data-target="player2" data-action="tox" data-val="-2">-2 Turn</button>
+                  <button class="gm-chip tox-down" data-target="player2" data-action="tox" data-val="-2">-2 Turno</button>
                   <button class="gm-chip tox-down" data-target="player2" data-action="tox" data-val="-1">-1</button>
                   <button class="gm-chip tox-up" data-target="player2" data-action="tox" data-val="+1">+1</button>
-                  <button class="gm-chip tox-purge" data-target="player2" data-action="tox" data-val="0">Purge</button>
+                  <button class="gm-chip tox-purge" data-target="player2" data-action="tox" data-val="0">Azzera</button>
                 </div>
               </div>
             </div>
@@ -364,37 +464,37 @@
           </div>
         </div>
 
-        <!-- Secret Mob / NPC Manager (Hidden to players) -->
+        <!-- Gestore Segreto Mostri & Incontri (Solo Federico) -->
         <div class="gm-section">
           <div class="section-header">
             <div>
-              <h3 class="section-title">👹 Secret Mob & Encounter Manager</h3>
-              <p class="section-subtitle">Strictly hidden from player screens. Federico's eyes only.</p>
+              <h3 class="section-title">👹 Gestore Segreto Mostri & Incontri</h3>
+              <p class="section-subtitle">Strettamente invisibile agli schermi dei giocatori. Riservato a Federico.</p>
             </div>
-            <button class="btn-primary" id="openAddMobModalBtn">+ Spawn Mob</button>
+            <button class="btn-primary" id="openAddMobModalBtn">+ Evoca Mostro</button>
           </div>
 
-          <!-- Mobs Grid -->
+          <!-- Griglia Mostri -->
           <div class="mobs-grid" id="gmMobsList">
-            <!-- Rendered dynamically -->
+            <!-- Renderizzata dinamicamente -->
           </div>
 
-          <!-- Empty State -->
+          <!-- Stato Vuoto -->
           <div class="empty-mobs-state parchment-card" id="emptyMobsState">
             <div class="empty-icon">💀</div>
-            <h4>No Active Mobs in Combat</h4>
-            <p>Click "Spawn Mob" above to bring goblins, beasts, or dark lords into the encounter.</p>
+            <h4>Nessun Mostro Attivo nello Scontro</h4>
+            <p>Clicca "+ Evoca Mostro" in alto per introdurre orrori, bestie o guardiani nel combattimento.</p>
           </div>
         </div>
 
-        <!-- GM Event Stream -->
+        <!-- Registro Master della Campagna -->
         <div class="parchment-card combat-log-card">
           <div class="log-header">
-            <h4>📜 Master Campaign Feed</h4>
-            <button class="btn-text-only" id="clearGmLogBtn">Clear Log</button>
+            <h4>📜 Registro Master della Campagna</h4>
+            <button class="btn-text-only" id="clearGmLogBtn">Svuota Registro</button>
           </div>
           <ul class="log-list" id="gmCombatLog">
-            <li class="log-entry system-entry">Federico entered the Grand Master sanctuary.</li>
+            <li class="log-entry system-entry">Federico ha aperto il tomo del Game Master.</li>
           </ul>
         </div>
 
@@ -403,128 +503,192 @@
 
   </main>
 
-  <!-- MODAL: SPAWN MOB -->
+  <!-- MODAL: EVOCA MOSTRO (Con Tossicità Personalizzata) -->
   <div class="modal-overlay hidden" id="mobModal">
     <div class="modal-card parchment-card">
       <div class="modal-header">
-        <h3>👹 Summon Creature</h3>
+        <h3>👹 Evoca Creatura / Mostro</h3>
         <button class="close-modal-btn" id="closeMobModalBtn">&times;</button>
       </div>
       <form id="addMobForm" class="modal-form" onsubmit="return false;">
-        <!-- Quick Template Buttons -->
+        <!-- Pulsanti Modelli Rapidi -->
         <div class="quick-template-row">
-          <button type="button" class="btn-tag" data-preset="Goblin Skirmisher" data-hp="12">Goblin (12 HP)</button>
-          <button type="button" class="btn-tag" data-preset="Skeleton Archer" data-hp="18">Skeleton (18 HP)</button>
-          <button type="button" class="btn-tag" data-preset="Dire Wolf" data-hp="28">Dire Wolf (28 HP)</button>
-          <button type="button" class="btn-tag" data-preset="Abyssal Fiend" data-hp="65">Boss (65 HP)</button>
+          <button type="button" class="btn-tag" data-preset="Scaramucciatore Goblin" data-hp="12" data-tox="4">Goblin (12 PF, 4 Toss)</button>
+          <button type="button" class="btn-tag" data-preset="Arciere Scheletro" data-hp="18" data-tox="0">Scheletro (18 PF, 0 Toss)</button>
+          <button type="button" class="btn-tag" data-preset="Lupo Crudele delle Ombre" data-hp="28" data-tox="6">Lupo (28 PF, 6 Toss)</button>
+          <button type="button" class="btn-tag" data-preset="Abominio Abissale" data-hp="65" data-tox="10">Boss (65 PF, 10 Toss)</button>
         </div>
 
         <div class="form-group">
-          <label for="mobNameInput">Creature / Mob Name</label>
-          <input type="text" id="mobNameInput" placeholder="e.g. Shadow Assassin" required>
+          <label for="mobNameInput">Nome Mostro / Creatura</label>
+          <input type="text" id="mobNameInput" placeholder="es. Assassino d'Ombra" required>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label for="mobHpInput">Max Health Points</label>
+            <label for="mobHpInput">Punti Ferita Massimi</label>
             <input type="number" id="mobHpInput" min="1" max="9999" value="20" required>
           </div>
           <div class="form-group">
-            <label for="mobCurrentHpInput">Current Health</label>
+            <label for="mobCurrentHpInput">Punti Ferita Attuali</label>
             <input type="number" id="mobCurrentHpInput" min="0" max="9999" value="20" required>
           </div>
         </div>
 
+        <!-- Sezione Tossicità Mostro (Opzionale con Cap Personalizzato) -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="mobMaxToxInput">Tossicità Massima (0 = Immune)</label>
+            <input type="number" id="mobMaxToxInput" min="0" max="100" value="0">
+          </div>
+          <div class="form-group">
+            <label for="mobCurrentToxInput">Tossicità Attuale</label>
+            <input type="number" id="mobCurrentToxInput" min="0" max="100" value="0">
+          </div>
+        </div>
+
         <div class="modal-actions">
-          <button type="button" class="btn-subtle" id="cancelMobModalBtn">Cancel</button>
-          <button type="button" class="btn-primary" id="confirmAddMobBtn">Summon into Combat</button>
+          <button type="button" class="btn-subtle" id="cancelMobModalBtn">Annulla</button>
+          <button type="button" class="btn-primary" id="confirmAddMobBtn">Evoca nel Conflitto</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL: EDIT MAX HP / CHARACTER -->
+  <!-- MODAL: LANCIATORE DI DADI -->
+  <div class="modal-overlay hidden" id="diceModal">
+    <div class="modal-card parchment-card dice-card">
+      <div class="modal-header">
+        <h3>🎲 Lanciatore di Dadi</h3>
+        <button class="close-modal-btn" id="closeDiceModalBtn">&times;</button>
+      </div>
+
+      <div class="dice-modal-body">
+        <!-- Selezione Dadi -->
+        <div class="dice-buttons-grid">
+          <button class="dice-type-btn" data-sides="4"><span class="dice-sym">▲</span> d4</button>
+          <button class="dice-type-btn" data-sides="6"><span class="dice-sym">◼</span> d6</button>
+          <button class="dice-type-btn" data-sides="8"><span class="dice-sym">◆</span> d8</button>
+          <button class="dice-type-btn" data-sides="10"><span class="dice-sym">⬢</span> d10</button>
+          <button class="dice-type-btn" data-sides="12"><span class="dice-sym">⬡</span> d12</button>
+          <button class="dice-type-btn selected" data-sides="20"><span class="dice-sym">★</span> d20</button>
+          <button class="dice-type-btn" data-sides="100"><span class="dice-sym">💯</span> d100</button>
+        </div>
+
+        <!-- Opzioni Tiro -->
+        <div class="dice-controls-row">
+          <div class="form-group flex-1">
+            <label for="diceCountInput">Numero Dadi</label>
+            <input type="number" id="diceCountInput" min="1" max="20" value="1">
+          </div>
+          <div class="form-group flex-1">
+            <label for="diceModInput">Modificatore (+/-)</label>
+            <input type="number" id="diceModInput" value="0">
+          </div>
+        </div>
+
+        <!-- Modalità Vantaggio / Tiro Segreto -->
+        <div class="dice-mode-toggles">
+          <label class="checkbox-label" id="secretRollWrapper">
+            <input type="checkbox" id="secretRollCheckbox">
+            <span>Tiro Segreto (Visibile solo a Federico)</span>
+          </label>
+        </div>
+
+        <!-- Grande Pulsante Lancia -->
+        <button class="btn-primary btn-roll-big" id="executeRollBtn">LANCIA DADI 🎲</button>
+
+        <!-- Display Risultato Tiro -->
+        <div class="dice-result-box" id="diceResultBox">
+          <div class="dice-result-total" id="diceResultTotal">--</div>
+          <div class="dice-result-breakdown" id="diceResultBreakdown">Seleziona i dadi e lancia</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: MODIFICA PERSONAGGIO -->
   <div class="modal-overlay hidden" id="editCharModal">
     <div class="modal-card parchment-card">
       <div class="modal-header">
-        <h3 id="editCharModalTitle">Character Settings</h3>
+        <h3 id="editCharModalTitle">Modifica Personaggio</h3>
         <button class="close-modal-btn" id="closeCharModalBtn">&times;</button>
       </div>
       <form id="editCharForm" class="modal-form" onsubmit="return false;">
         <div class="form-group">
-          <label for="charNameInput">Character Name</label>
+          <label for="charNameInput">Nome Personaggio</label>
           <input type="text" id="charNameInput" required>
         </div>
         <div class="form-group">
-          <label for="charMaxHpInput">Maximum Health Points</label>
+          <label for="charMaxHpInput">Punti Ferita Massimi</label>
           <input type="number" id="charMaxHpInput" min="1" max="9999" required>
         </div>
         <div class="modal-actions">
-          <button type="button" class="btn-subtle" id="cancelCharModalBtn">Cancel</button>
-          <button type="button" class="btn-primary" id="saveCharBtn">Save Changes</button>
+          <button type="button" class="btn-subtle" id="cancelCharModalBtn">Annulla</button>
+          <button type="button" class="btn-primary" id="saveCharBtn">Salva Modifiche</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL: SETTINGS & SYNC PROVIDER -->
+  <!-- MODAL: IMPOSTAZIONI E SINCRONIZZAZIONE -->
   <div class="modal-overlay hidden" id="settingsModal">
     <div class="modal-card parchment-card settings-card">
       <div class="modal-header">
-        <h3>⚙️ Al-Pairus Settings & Sync</h3>
+        <h3>⚙️ Impostazioni Al-Pairus & Sincronizzazione</h3>
         <button class="close-modal-btn" id="closeSettingsModalBtn">&times;</button>
       </div>
       <div class="settings-content">
         <div class="settings-tab-group">
           <div class="settings-section">
-            <h4>🌐 Multi-Device Sync Options</h4>
+            <h4>🌐 Sincronizzazione Multi-Dispositivo</h4>
             <p class="settings-desc">
-              Al-Pairus is built to work over the internet during video-calls with zero port forwarding.
+              Al-Pairus sincronizza automaticamente i dadi e le statistiche durante le videochiamate tramite WebRTC senza dover aprire porte.
             </p>
 
             <div class="sync-mode-selector">
               <label class="radio-option">
                 <input type="radio" name="syncProvider" value="p2p" checked>
                 <div>
-                  <strong>P2P Direct Room Sync (Built-in PeerJS)</strong>
-                  <p class="radio-hint">Instant internet sync across different networks. Zero configuration needed!</p>
+                  <strong>Sincronizzazione P2P Diretta (PeerJS integrato)</strong>
+                  <p class="radio-hint">Sincronizzazione istantanea su Internet tra reti diverse. Configurazione zero!</p>
                 </div>
               </label>
 
               <label class="radio-option">
                 <input type="radio" name="syncProvider" value="firebase">
                 <div>
-                  <strong>Firebase Realtime Database</strong>
-                  <p class="radio-hint">Free cloud storage that permanently saves your campaign across sessions.</p>
+                  <strong>Database Cloud (Firebase Realtime Database)</strong>
+                  <p class="radio-hint">Salva in modo permanente la campagna sul cloud per riprendere in futuro.</p>
                 </div>
               </label>
             </div>
           </div>
 
-          <!-- Firebase Config Box (Optional) -->
+          <!-- Casella Configurazione Firebase (Opzionale) -->
           <div class="firebase-config-box hidden" id="firebaseConfigBox">
-            <label for="fbDbUrl">Firebase Realtime Database URL</label>
-            <input type="text" id="fbDbUrl" placeholder="https://your-rpg-default-rtdb.firebaseio.com">
-            <small class="form-tip">Paste your free Firebase Realtime Database URL to enable persistent cloud sync.</small>
+            <label for="fbDbUrl">URL Firebase Realtime Database</label>
+            <input type="text" id="fbDbUrl" placeholder="https://tuo-progetto-rtdb.firebaseio.com">
+            <small class="form-tip">Incolla qui l'URL del tuo database gratuito Firebase per la persistenza permanente.</small>
           </div>
 
           <div class="settings-section">
-            <h4>👑 Game Master Passcode</h4>
+            <h4>👑 Passcode Master del Game Master</h4>
             <div class="input-with-button">
-              <input type="password" id="newGmPinInput" placeholder="New GM PIN (Current: 1234)">
-              <button type="button" class="btn-subtle" id="saveGmPinBtn">Update PIN</button>
+              <input type="password" id="newGmPinInput" placeholder="Nuovo PIN (Attuale: 1234)">
+              <button type="button" class="btn-subtle" id="saveGmPinBtn">Aggiorna PIN</button>
             </div>
           </div>
         </div>
 
         <div class="modal-actions">
-          <button type="button" class="btn-primary" id="saveSettingsBtn">Done</button>
+          <button type="button" class="btn-primary" id="saveSettingsBtn">Salva & Chiudi</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Audio feedback effects created via Web Audio API -->
+  <!-- Logica applicativa e sintetizzatore audio Web Audio API -->
   <script src="app.js"></script>
 </body>
 </html>
