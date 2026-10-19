@@ -148,24 +148,13 @@
     { key: 'cha', label: 'Carisma' }
   ];
 
-  const POINT_COSTS = {
-    8: 0,
-    9: 1,
-    10: 2,
-    11: 3,
-    12: 4,
-    13: 5,
-    14: 7,
-    15: 9
-  };
-
   const DEFAULT_ATTRIBUTES = {
-    str: { base: 12, racial: 0 },
-    dex: { base: 13, racial: 0 },
-    con: { base: 13, racial: 0 },
-    int: { base: 13, racial: 0 },
-    wis: { base: 12, racial: 0 },
-    cha: { base: 11, racial: 0 }
+    str: 12,
+    dex: 13,
+    con: 13,
+    int: 13,
+    wis: 12,
+    cha: 11
   };
 
   // --- STATO INIZIALE PREDEFINITO ---
@@ -199,9 +188,7 @@
       }
     },
     mobs: [],
-    logs: [
-      { id: '1', text: 'Campagna avviata. Il freddo del ferro avvolge Al-Pairus.', type: 'system', time: new Date().toLocaleTimeString() }
-    ],
+    logs: [],
     gmPin: '1234',
     version: 2
   };
@@ -265,13 +252,11 @@
 
         // Vista Giocatore
         playerCharName: document.getElementById('playerCharName'),
-        renameCharBtn: document.getElementById('renameCharBtn'),
         playerTurnCount: document.getElementById('playerTurnCount'),
         playerHpCurrent: document.getElementById('playerHpCurrent'),
         playerHpMax: document.getElementById('playerHpMax'),
         playerHpBar: document.getElementById('playerHpBar'),
         playerHpPercent: document.getElementById('playerHpPercent'),
-        editMaxHpBtn: document.getElementById('editMaxHpBtn'),
         hpCustomAmount: document.getElementById('hpCustomAmount'),
         dealDamageBtn: document.getElementById('dealDamageBtn'),
         applyHealBtn: document.getElementById('applyHealBtn'),
@@ -294,9 +279,7 @@
         btnRiteOfFlesh: document.getElementById('btnRiteOfFlesh'),
         biomechNotesInput: document.getElementById('biomechNotesInput'),
 
-        // Attributi & Point Buy
-        totalPointsSpent: document.getElementById('totalPointsSpent'),
-        resetAttributesBtn: document.getElementById('resetAttributesBtn'),
+        // Attributi
         attributesTableBody: document.getElementById('attributesTableBody'),
 
         // Vista GM (Federico)
@@ -344,13 +327,7 @@
         diceResultTotal: document.getElementById('diceResultTotal'),
         diceResultBreakdown: document.getElementById('diceResultBreakdown'),
 
-        // Modale Modifica Personaggio
-        editCharModal: document.getElementById('editCharModal'),
-        closeCharModalBtn: document.getElementById('closeCharModalBtn'),
-        cancelCharModalBtn: document.getElementById('cancelCharModalBtn'),
-        saveCharBtn: document.getElementById('saveCharBtn'),
-        charNameInput: document.getElementById('charNameInput'),
-        charMaxHpInput: document.getElementById('charMaxHpInput'),
+
 
         // Modale Impostazioni
         settingsModal: document.getElementById('settingsModal'),
@@ -456,25 +433,7 @@
         }
       });
 
-      // Reset Attributi
-      this.dom.resetAttributesBtn.addEventListener('click', () => {
-        if (confirm('Reimpostare i punteggi delle caratteristiche ai valori base?')) {
-          const player = this.state.players[this.currentRole];
-          if (player) {
-            player.attributes = JSON.parse(JSON.stringify(DEFAULT_ATTRIBUTES));
-            this.renderAttributes();
-            this.broadcastState();
-            sfx.playClick();
-          }
-        }
-      });
 
-      // Modifica Nome / PF Max
-      this.dom.renameCharBtn.addEventListener('click', () => this.openEditCharModal());
-      this.dom.editMaxHpBtn.addEventListener('click', () => this.openEditCharModal());
-      this.dom.closeCharModalBtn.addEventListener('click', () => this.closeModal(this.dom.editCharModal));
-      this.dom.cancelCharModalBtn.addEventListener('click', () => this.closeModal(this.dom.editCharModal));
-      this.dom.saveCharBtn.addEventListener('click', () => this.saveCharChanges());
 
       // Svuota Log
       this.dom.clearPlayerLogBtn.addEventListener('click', () => {
@@ -754,46 +713,30 @@
 
       const tbody = this.dom.attributesTableBody;
       tbody.innerHTML = '';
-      let totalCost = 0;
 
       ATTRIBUTES.forEach(attr => {
-        const data = player.attributes[attr.key] || { base: 10, racial: 0 };
-        const baseScore = Math.max(8, Math.min(15, data.base));
-        const racial = data.racial || 0;
-        const total = baseScore + racial;
-        const mod = Math.floor((total - 10) / 2);
+        const raw = player.attributes[attr.key];
+        const score = typeof raw === 'object' ? ((raw.base || 10) + (raw.racial || 0)) : (Number(raw) || 10);
+        const mod = Math.floor((score - 10) / 2);
         const modStr = mod >= 0 ? `+${mod}` : `${mod}`;
-        const cost = POINT_COSTS[baseScore] !== undefined ? POINT_COSTS[baseScore] : 0;
-        totalCost += cost;
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${attr.label}</td>
           <td>
-            <input type="number" class="attr-input base-input" data-key="${attr.key}" min="8" max="15" value="${baseScore}">
+            <input type="number" class="attr-input score-input" data-key="${attr.key}" min="1" max="30" value="${score}">
           </td>
-          <td>
-            <input type="number" class="attr-input racial-input" data-key="${attr.key}" min="-5" max="10" value="${racial}">
-          </td>
-          <td class="attr-total-val">${total}</td>
           <td>
             <button class="attr-mod-btn" data-key="${attr.key}" data-mod="${mod}" data-name="${attr.label}" title="Clicca per lanciare 1d20 ${modStr}">
               🎲 ${modStr}
             </button>
           </td>
-          <td class="attr-cost-val">${cost}</td>
         `;
 
-        // Eventi input
-        tr.querySelector('.base-input').addEventListener('change', (e) => {
-          data.base = parseInt(e.target.value, 10) || 8;
-          player.lastUpdated = Date.now();
-          this.renderAttributes();
-          this.broadcastState();
-        });
-
-        tr.querySelector('.racial-input').addEventListener('change', (e) => {
-          data.racial = parseInt(e.target.value, 10) || 0;
+        // Modifica punteggio
+        tr.querySelector('.score-input').addEventListener('change', (e) => {
+          const val = parseInt(e.target.value, 10);
+          player.attributes[attr.key] = isNaN(val) ? 10 : Math.max(1, Math.min(30, val));
           player.lastUpdated = Date.now();
           this.renderAttributes();
           this.broadcastState();
@@ -808,13 +751,6 @@
 
         tbody.appendChild(tr);
       });
-
-      this.dom.totalPointsSpent.textContent = totalCost;
-      if (totalCost > 27) {
-        this.dom.totalPointsSpent.style.color = '#ef4444';
-      } else {
-        this.dom.totalPointsSpent.style.color = 'var(--gold-bright)';
-      }
     }
 
     renderVials(currentTox) {
@@ -1010,22 +946,6 @@
       const player = this.state.players[this.currentRole];
       const prevTox = player.toxicity;
 
-      // Se Kassandra ha il Motore Chirurgico attivo, subisce danno a inizio/fine turno!
-      if (this.currentRole === 'player1' && player.engine && player.engine.gear > 0) {
-        if (player.engine.gear === 1 || player.engine.gear === 2) {
-          player.hp = Math.max(0, player.hp - 1);
-          sfx.playDamage();
-          this.spawnFloatingText(`-1 PF (Motore)`, 'damage');
-          this.addLog(`Motore Chirurgico (Marcia ${player.engine.gear}): Kassandra perde 1 PF (PF rimasti: ${player.hp}/${player.maxHp}).`, 'damage');
-        } else if (player.engine.gear === 3) {
-          const d4 = Math.floor(Math.random() * 4) + 1;
-          player.hp = Math.max(0, player.hp - d4);
-          sfx.playDamage();
-          this.spawnFloatingText(`-${d4} PF (Motore 1d4)`, 'damage');
-          this.addLog(`Motore Chirurgico (Marcia 3): Kassandra perde 1d4 [${d4}] PF (PF rimasti: ${player.hp}/${player.maxHp})!`, 'damage');
-        }
-      }
-
       // Regola Turno: -2 Tossicità (fino a 0) e incremento turno
       player.toxicity = Math.max(0, player.toxicity - 2);
       player.turnCount += 1;
@@ -1046,22 +966,26 @@
       const player = this.state.players.player1;
       if (!player.engine) player.engine = { gear: 0, notes: '' };
 
-      player.engine.gear = gearNum;
-      sfx.playToxicity();
+      // Se si clicca la marcia già attiva, si disattiva (gear = 0)
+      if (player.engine.gear === gearNum) {
+        player.engine.gear = 0;
+        sfx.playClick();
+        this.spawnFloatingText(`Motore Spento`, 'heal');
+        this.addLog(`Kassandra ha disattivato il Motore Chirurgico (spento).`, 'system');
+      } else {
+        player.engine.gear = gearNum;
+        sfx.playClick();
 
-      if (gearNum === 1) {
-        player.toxicity = Math.min(10, player.toxicity + 4);
-        this.spawnFloatingText(`+4 TOSS (Marcia 1)`, 'tox');
-        this.addLog(`Kassandra ha attivato il Motore Chirurgico (Marcia 1): +4 Tossicità. Modifica biomeccanica e ridistribuzione 2 punti. -1 PF all'inizio di ogni turno.`, 'gm');
-      } else if (gearNum === 2) {
-        player.toxicity = Math.min(10, player.toxicity + 1);
-        player.hp = Math.min(player.maxHp, player.hp + 4);
-        this.spawnFloatingText(`+1 TOSS / +4 PF`, 'heal');
-        this.addLog(`Kassandra ha innestato la Marcia 2: +1 Tossicità, +4 PF. -1 PF all'inizio di ogni turno.`, 'heal');
-      } else if (gearNum === 3) {
-        player.toxicity = Math.min(10, player.toxicity + 1);
-        this.spawnFloatingText(`+1 TOSS (Marcia 3)`, 'tox');
-        this.addLog(`Kassandra ha innestato la Marcia 3: +1 Tossicità. Modifica biomeccanica e ridistribuzione 2 punti. -1d4 PF all'inizio di ogni turno!`, 'damage');
+        if (gearNum === 1) {
+          this.spawnFloatingText(`Marcia 1`, 'tox');
+          this.addLog(`Kassandra ha innestato la Marcia 1. [Guida: +4 Tossicità, modifica biomeccanica, ridistribuzione 2 punti caratteristica, -1 PF a inizio turno].`, 'system');
+        } else if (gearNum === 2) {
+          this.spawnFloatingText(`Marcia 2`, 'heal');
+          this.addLog(`Kassandra ha innestato la Marcia 2. [Guida: +1 Tossicità, +4 PF, -1 PF a inizio turno].`, 'system');
+        } else if (gearNum === 3) {
+          this.spawnFloatingText(`Marcia 3`, 'damage');
+          this.addLog(`Kassandra ha innestato la Marcia 3. [Guida: +1 Tossicità, modifica biomeccanica, ridistribuzione 2 punti caratteristica, -1d4 PF a inizio turno].`, 'system');
+        }
       }
 
       player.lastUpdated = Date.now();
@@ -1073,20 +997,17 @@
       if (this.currentRole !== 'player1') return;
       const player = this.state.players.player1;
 
-      if (!confirm('Celebrare il Rito di Carne e Ferro? Il motore verrà disattivato, le modifiche annullate, la salute tornerà al MASSIMO e la Tossicità al MASSIMO (10).')) {
+      if (!confirm('Celebrare il Rito di Carne e Ferro? Il motore verrà disattivato (applica manualmente il ripristino PF e Tossicità).')) {
         return;
       }
 
       if (!player.engine) player.engine = { gear: 0, notes: '' };
       player.engine.gear = 0;
-      player.engine.notes = '';
-      player.hp = player.maxHp;
-      player.toxicity = 10;
       player.lastUpdated = Date.now();
 
       sfx.playTurnEnd();
       this.spawnFloatingText(`RITO DI CARNE E FERRO!`, 'heal');
-      this.addLog(`Kassandra ha celebrato il RITO DI CARNE E FERRO! Motore disattivato, salute rigenerata al MASSIMO (${player.hp}/${player.maxHp}), Tossicità al MASSIMO (10/10).`, 'gm');
+      this.addLog(`Kassandra ha celebrato il RITO DI CARNE E FERRO. Motore Chirurgico disattivato. [Promemoria guida: ripristina PF al massimo ed imposta Tossicità a 10].`, 'gm');
 
       this.render();
       this.broadcastState();
@@ -1265,33 +1186,7 @@
       }
     }
 
-    // --- MODALI ---
-    openEditCharModal() {
-      if (!this.currentRole || this.currentRole === 'gm') return;
-      const player = this.state.players[this.currentRole];
-      this.dom.charNameInput.value = player.name;
-      this.dom.charMaxHpInput.value = player.maxHp;
-      this.openModal(this.dom.editCharModal);
-    }
 
-    saveCharChanges() {
-      if (!this.currentRole || this.currentRole === 'gm') return;
-      const player = this.state.players[this.currentRole];
-      const newName = this.dom.charNameInput.value.trim();
-      const newMaxHp = parseInt(this.dom.charMaxHpInput.value, 10);
-
-      if (newName) player.name = newName;
-      if (newMaxHp && newMaxHp > 0) {
-        player.maxHp = newMaxHp;
-        player.hp = Math.min(player.hp, player.maxHp);
-      }
-      player.lastUpdated = Date.now();
-
-      this.addLog(`${player.name} ha aggiornato le impostazioni del personaggio.`, 'system');
-      this.closeModal(this.dom.editCharModal);
-      this.render();
-      this.broadcastState();
-    }
 
     openMobModal() {
       this.dom.mobNameInput.value = '';
@@ -1544,6 +1439,23 @@
         if (saved) {
           const parsed = JSON.parse(saved);
           this.state = { ...DEFAULT_STATE, ...parsed };
+
+          // Nomi fissi e immutabili per i personaggi
+          if (this.state.players) {
+            if (this.state.players.player1) this.state.players.player1.name = 'Kassandra';
+            if (this.state.players.player2) this.state.players.player2.name = 'Yoru';
+          }
+
+          // Elimina qualsiasi log residuo o placeholder
+          if (Array.isArray(this.state.logs)) {
+            this.state.logs = this.state.logs.filter(log => {
+              const txt = (log && log.text) ? log.text : '';
+              return !txt.includes('Campaign initialized') &&
+                     !txt.includes('dark wind') &&
+                     !txt.includes('Il freddo del ferro avvolge Al-Pairus') &&
+                     !txt.includes('Campagna avviata');
+            });
+          }
         }
       } catch (e) {}
     }

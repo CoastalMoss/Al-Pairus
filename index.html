@@ -120,7 +120,6 @@
           <div class="character-identity">
             <div class="char-title-row">
               <h2 class="character-name" id="playerCharName">Kassandra</h2>
-              <button class="edit-name-btn" id="renameCharBtn" title="Modifica Nome">✏️</button>
             </div>
           </div>
 
@@ -144,7 +143,6 @@
                 <span class="hp-current" id="playerHpCurrent">8</span>
                 <span class="hp-divider">/</span>
                 <span class="hp-max" id="playerHpMax">8</span>
-                <button class="icon-subtle-btn" id="editMaxHpBtn" title="Modifica PF Massimi">⚙️</button>
               </div>
             </div>
 
@@ -260,11 +258,11 @@
           <!-- Modifiche Biomeccaniche Note -->
           <div class="modifications-tracker">
             <label for="biomechNotesInput">Modifiche Biomeccaniche Attive</label>
-            <input type="text" id="biomechNotesInput" placeholder="es. Lame retrattili sugli avambracci, occhi di ferro..." value="">
+            <input type="text" id="biomechNotesInput" value="">
           </div>
         </div>
 
-        <!-- SCHEDA ATTRIBUTI & POINT BUY (Per Kassandra e Yoru) -->
+        <!-- SCHEDA ATTRIBUTI (Per Kassandra e Yoru) -->
         <div class="parchment-card attributes-card">
           <div class="attributes-header">
             <div class="attr-title-area">
@@ -274,24 +272,16 @@
                 <span class="attr-subheading">Clicca su un modificatore per effettuare una prova (1d20 + Mod)</span>
               </div>
             </div>
-            <div class="points-budget-box">
-              <span class="points-label">Punti Totali:</span>
-              <span class="points-value" id="totalPointsSpent">26</span> / 27
-              <button class="btn-subtle btn-xs" id="resetAttributesBtn" title="Reimposta attributi">Reimposta</button>
-            </div>
           </div>
 
-          <!-- Tabella Attributi D&D / Point Buy -->
+          <!-- Tabella Attributi -->
           <div class="attributes-table-wrapper">
             <table class="attributes-table">
               <thead>
                 <tr>
                   <th>Caratteristica</th>
-                  <th>Punteggio Base</th>
-                  <th>Bonus Razziale</th>
-                  <th>Totale</th>
+                  <th>Punteggio</th>
                   <th>Modificatore</th>
-                  <th>Costo Punti</th>
                 </tr>
               </thead>
               <tbody id="attributesTableBody">
@@ -322,9 +312,7 @@
             <h4>📜 Cronache di Combattimento</h4>
             <button class="btn-text-only" id="clearPlayerLogBtn">Svuota</button>
           </div>
-          <ul class="log-list" id="playerCombatLog">
-            <li class="log-entry system-entry">Sei entrato nella sessione. Pronti al combattimento.</li>
-          </ul>
+          <ul class="log-list" id="playerCombatLog"></ul>
         </div>
 
       </div>
@@ -493,9 +481,7 @@
             <h4>📜 Registro Master della Campagna</h4>
             <button class="btn-text-only" id="clearGmLogBtn">Svuota Registro</button>
           </div>
-          <ul class="log-list" id="gmCombatLog">
-            <li class="log-entry system-entry">Federico ha aperto il tomo del Game Master.</li>
-          </ul>
+          <ul class="log-list" id="gmCombatLog"></ul>
         </div>
 
       </div>
@@ -607,29 +593,6 @@
     </div>
   </div>
 
-  <!-- MODAL: MODIFICA PERSONAGGIO -->
-  <div class="modal-overlay hidden" id="editCharModal">
-    <div class="modal-card parchment-card">
-      <div class="modal-header">
-        <h3 id="editCharModalTitle">Modifica Personaggio</h3>
-        <button class="close-modal-btn" id="closeCharModalBtn">&times;</button>
-      </div>
-      <form id="editCharForm" class="modal-form" onsubmit="return false;">
-        <div class="form-group">
-          <label for="charNameInput">Nome Personaggio</label>
-          <input type="text" id="charNameInput" required>
-        </div>
-        <div class="form-group">
-          <label for="charMaxHpInput">Punti Ferita Massimi</label>
-          <input type="number" id="charMaxHpInput" min="1" max="9999" required>
-        </div>
-        <div class="modal-actions">
-          <button type="button" class="btn-subtle" id="cancelCharModalBtn">Annulla</button>
-          <button type="button" class="btn-primary" id="saveCharBtn">Salva Modifiche</button>
-        </div>
-      </form>
-    </div>
-  </div>
 
   <!-- MODAL: IMPOSTAZIONI E SINCRONIZZAZIONE -->
   <div class="modal-overlay hidden" id="settingsModal">
