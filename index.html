@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Grimoire - Custom RPG Stat Tracker</title>
+  <title>Al-Pairus - Custom RPG Stat Tracker</title>
   <meta name="description" content="A real-time Dark Fantasy RPG dashboard for players and Game Master to track Health, Toxicity, and Mobs.">
 
   <!-- Google Fonts -->
@@ -26,8 +26,8 @@
     <div class="brand-zone">
       <div class="sigil-icon">⚔️</div>
       <div class="brand-text">
-        <h1 class="app-title">GRIMOIRE</h1>
-        <span class="app-subtitle">Grim RPG Real-Time Stat Tracker</span>
+        <h1 class="app-title">AL-PAIRUS</h1>
+        <span class="app-subtitle">Real-Time Combat & Stat Tracker</span>
       </div>
     </div>
 
@@ -59,7 +59,7 @@
       <div class="parchment-card lobby-card">
         <div class="card-ornament top-ornament"></div>
         <h2 class="card-title">Enter the Realm</h2>
-        <p class="card-desc">Choose your campaign room and assume your mantle.</p>
+        <p class="card-desc">Choose your campaign room and select your character.</p>
 
         <form id="lobbyForm" class="lobby-form" onsubmit="return false;">
           <div class="form-group">
@@ -72,34 +72,25 @@
           </div>
 
           <div class="role-grid-section">
-            <label>Select Your Persona</label>
+            <label>Select Your Character</label>
             <div class="role-selection-grid">
               
-              <!-- Player 1 Option -->
+              <!-- Kassandra Option -->
               <div class="role-card" data-role="player1" tabindex="0">
-                <div class="role-badge">Adventurer</div>
-                <div class="role-avatar">🛡️</div>
-                <h3 class="role-name" id="lobbyP1Name">Player 1</h3>
-                <p class="role-desc">Track your own HP, manage 0-10 Toxicity, and declare end of turn.</p>
+                <h3 class="role-name" id="lobbyP1Name">Kassandra</h3>
                 <div class="role-select-indicator">Select</div>
               </div>
 
-              <!-- Giuseppe Option -->
+              <!-- Yoru Option -->
               <div class="role-card" data-role="player2" tabindex="0">
-                <div class="role-badge">Comrade</div>
-                <div class="role-avatar">🏹</div>
-                <h3 class="role-name" id="lobbyP2Name">Giuseppe</h3>
-                <p class="role-desc">Track your personal vital signs, venom levels, and turn cycles.</p>
+                <h3 class="role-name" id="lobbyP2Name">Yoru</h3>
                 <div class="role-select-indicator">Select</div>
               </div>
 
-              <!-- Federico Option (GM) -->
+              <!-- Federico Option -->
               <div class="role-card gm-card" data-role="gm" tabindex="0">
-                <div class="role-badge gm-badge">Game Master</div>
-                <div class="role-avatar">👑</div>
-                <h3 class="role-name">Federico (GM)</h3>
-                <p class="role-desc">Oversee all players in real-time, override stats, and command mobs.</p>
-                <div class="role-select-indicator">Master Key Required</div>
+                <h3 class="role-name">Federico</h3>
+                <div class="role-select-indicator">Passcode Required</div>
               </div>
 
             </div>
@@ -126,13 +117,9 @@
         <!-- Player Status Header -->
         <div class="sheet-header parchment-card">
           <div class="character-identity">
-            <div class="character-avatar" id="playerAvatar">🛡️</div>
-            <div>
-              <div class="char-title-row">
-                <h2 class="character-name" id="playerCharName">Player 1</h2>
-                <button class="edit-name-btn" id="renameCharBtn" title="Change Character Name">✏️</button>
-              </div>
-              <div class="character-meta" id="playerMetaRole">Adventurer &bull; Private Sheet</div>
+            <div class="char-title-row">
+              <h2 class="character-name" id="playerCharName">Kassandra</h2>
+              <button class="edit-name-btn" id="renameCharBtn" title="Change Character Name">✏️</button>
             </div>
           </div>
 
@@ -153,9 +140,9 @@
                 <span class="stat-title">Health Points</span>
               </div>
               <div class="hp-numeric-display">
-                <span class="hp-current" id="playerHpCurrent">20</span>
+                <span class="hp-current" id="playerHpCurrent">8</span>
                 <span class="hp-divider">/</span>
-                <span class="hp-max" id="playerHpMax">20</span>
+                <span class="hp-max" id="playerHpMax">8</span>
                 <button class="icon-subtle-btn" id="editMaxHpBtn" title="Edit Max HP">⚙️</button>
               </div>
             </div>
@@ -196,12 +183,6 @@
                 <span class="tox-current" id="playerToxCurrent">0</span>
                 <span class="tox-max">/ 10</span>
               </div>
-            </div>
-
-            <!-- Toxicity Status Badge -->
-            <div class="tox-status-banner" id="toxStatusBanner">
-              <span class="tox-status-icon">🟢</span>
-              <span class="tox-status-text" id="toxStatusText">Pure Blood (Safe)</span>
             </div>
 
             <!-- 10 Alchemical Vials / Segments -->
@@ -284,13 +265,12 @@
 
           <div class="party-monitor-grid">
             
-            <!-- Player 1 GM Card -->
+            <!-- Kassandra GM Card -->
             <div class="parchment-card party-member-card" id="gmCardPlayer1">
               <div class="party-card-top">
                 <div class="player-brief">
-                  <span class="member-avatar">🛡️</span>
                   <div>
-                    <h4 class="member-name" id="gmP1Name">Player 1</h4>
+                    <h4 class="member-name" id="gmP1Name">Kassandra</h4>
                     <span class="member-turn" id="gmP1Turn">Turn 1</span>
                   </div>
                 </div>
@@ -301,7 +281,7 @@
               <div class="gm-stat-block">
                 <div class="gm-stat-row">
                   <span class="gm-stat-label">Health</span>
-                  <span class="gm-stat-val" id="gmP1HpLabel">20 / 20</span>
+                  <span class="gm-stat-val" id="gmP1HpLabel">8 / 8</span>
                 </div>
                 <div class="meter-track health-track small">
                   <div class="meter-fill health-fill" id="gmP1HpBar" style="width: 100%;"></div>
@@ -333,13 +313,12 @@
               </div>
             </div>
 
-            <!-- Giuseppe GM Card -->
+            <!-- Yoru GM Card -->
             <div class="parchment-card party-member-card" id="gmCardPlayer2">
               <div class="party-card-top">
                 <div class="player-brief">
-                  <span class="member-avatar">🏹</span>
                   <div>
-                    <h4 class="member-name" id="gmP2Name">Giuseppe</h4>
+                    <h4 class="member-name" id="gmP2Name">Yoru</h4>
                     <span class="member-turn" id="gmP2Turn">Turn 1</span>
                   </div>
                 </div>
@@ -350,7 +329,7 @@
               <div class="gm-stat-block">
                 <div class="gm-stat-row">
                   <span class="gm-stat-label">Health</span>
-                  <span class="gm-stat-val" id="gmP2HpLabel">20 / 20</span>
+                  <span class="gm-stat-val" id="gmP2HpLabel">7 / 7</span>
                 </div>
                 <div class="meter-track health-track small">
                   <div class="meter-fill health-fill" id="gmP2HpBar" style="width: 100%;"></div>
@@ -492,7 +471,7 @@
   <div class="modal-overlay hidden" id="settingsModal">
     <div class="modal-card parchment-card settings-card">
       <div class="modal-header">
-        <h3>⚙️ Grimoire Settings & Sync</h3>
+        <h3>⚙️ Al-Pairus Settings & Sync</h3>
         <button class="close-modal-btn" id="closeSettingsModalBtn">&times;</button>
       </div>
       <div class="settings-content">
@@ -500,7 +479,7 @@
           <div class="settings-section">
             <h4>🌐 Multi-Device Sync Options</h4>
             <p class="settings-desc">
-              Grimoire is built to work over the internet during video-calls with zero port forwarding.
+              Al-Pairus is built to work over the internet during video-calls with zero port forwarding.
             </p>
 
             <div class="sync-mode-selector">

@@ -1,5 +1,5 @@
 /**
- * GRIMOIRE - RPG Real-Time Stat Tracker
+ * AL-PAIRUS - RPG Real-Time Stat Tracker
  * Client logic, P2P/Cloud state synchronization, and UI controllers.
  */
 
@@ -126,19 +126,17 @@
   const DEFAULT_STATE = {
     players: {
       player1: {
-        name: 'Player 1',
-        avatar: '🛡️',
-        hp: 20,
-        maxHp: 20,
+        name: 'Kassandra',
+        hp: 8,
+        maxHp: 8,
         toxicity: 0,
         turnCount: 1,
         lastUpdated: Date.now()
       },
       player2: {
-        name: 'Giuseppe',
-        avatar: '🏹',
-        hp: 20,
-        maxHp: 20,
+        name: 'Yoru',
+        hp: 7,
+        maxHp: 7,
         toxicity: 0,
         turnCount: 1,
         lastUpdated: Date.now()
@@ -153,7 +151,7 @@
   };
 
   // --- APPLICATION CONTROLLER ---
-  class GrimoireApp {
+  class AlPairusApp {
     constructor() {
       this.roomId = 'realm-of-shadows';
       this.currentRole = null; // 'player1' | 'player2' | 'gm'
@@ -206,9 +204,7 @@
         lobbyP2Name: document.getElementById('lobbyP2Name'),
 
         // Player View
-        playerAvatar: document.getElementById('playerAvatar'),
         playerCharName: document.getElementById('playerCharName'),
-        playerMetaRole: document.getElementById('playerMetaRole'),
         renameCharBtn: document.getElementById('renameCharBtn'),
         playerTurnCount: document.getElementById('playerTurnCount'),
         playerHpCurrent: document.getElementById('playerHpCurrent'),
@@ -220,8 +216,6 @@
         dealDamageBtn: document.getElementById('dealDamageBtn'),
         applyHealBtn: document.getElementById('applyHealBtn'),
         playerToxCurrent: document.getElementById('playerToxCurrent'),
-        toxStatusBanner: document.getElementById('toxStatusBanner'),
-        toxStatusText: document.getElementById('toxStatusText'),
         playerVialsContainer: document.getElementById('playerVialsContainer'),
         decToxBtn: document.getElementById('decToxBtn'),
         incToxBtn: document.getElementById('incToxBtn'),
@@ -543,9 +537,7 @@
       const player = this.state.players[this.currentRole];
       if (!player) return;
 
-      this.dom.playerAvatar.textContent = player.avatar;
       this.dom.playerCharName.textContent = player.name;
-      this.dom.playerMetaRole.textContent = `${this.currentRole === 'player1' ? 'Adventurer' : 'Comrade'} • Private Sheet`;
       this.dom.playerTurnCount.textContent = player.turnCount;
 
       // Health
@@ -564,7 +556,6 @@
       // Toxicity
       this.dom.playerToxCurrent.textContent = player.toxicity;
       this.renderVials(player.toxicity);
-      this.updateToxBanner(player.toxicity);
     }
 
     renderVials(currentTox) {
@@ -603,25 +594,6 @@
         });
 
         container.appendChild(slot);
-      }
-    }
-
-    updateToxBanner(tox) {
-      const banner = this.dom.toxStatusBanner;
-      const text = this.dom.toxStatusText;
-
-      banner.classList.remove('warning', 'critical');
-
-      if (tox === 0) {
-        text.textContent = 'Pure Blood (Safe & Clear)';
-      } else if (tox <= 4) {
-        text.textContent = `Mild Venom (${tox}/10) - Stable`;
-      } else if (tox <= 8) {
-        banner.classList.add('warning');
-        text.textContent = `High Toxicity (${tox}/10) - Purge Soon!`;
-      } else {
-        banner.classList.add('critical');
-        text.textContent = `DANGEROUS OVERDOSE (${tox}/10)!`;
       }
     }
 
@@ -954,7 +926,7 @@
     initBroadcastChannel() {
       try {
         if ('BroadcastChannel' in window) {
-          this.broadcastChannel = new BroadcastChannel(`grimoire_${this.roomId}`);
+          this.broadcastChannel = new BroadcastChannel(`alpairus_${this.roomId}`);
           this.broadcastChannel.onmessage = (event) => {
             if (event.data && event.data.type === 'STATE_UPDATE') {
               this.mergeRemoteState(event.data.payload);
@@ -975,9 +947,8 @@
       }
 
       // Consistent room-scoped Peer IDs for the 3 roles
-      // Room host: GM or Player 1
       const normalizedRoom = this.roomId.toLowerCase().replace(/[^a-z0-9_-]/g, '');
-      const myPeerId = `grimoire-${normalizedRoom}-${this.currentRole}`;
+      const myPeerId = `alpairus-${normalizedRoom}-${this.currentRole}`;
 
       try {
         // Use PeerJS public cloud signaling server
@@ -1020,7 +991,7 @@
       const targets = allRoles.filter(r => r !== this.currentRole);
 
       targets.forEach(role => {
-        const targetPeerId = `grimoire-${normalizedRoom}-${role}`;
+        const targetPeerId = `alpairus-${normalizedRoom}-${role}`;
         try {
           const conn = this.peer.connect(targetPeerId, { reliable: true });
           this.setupConnection(conn);
@@ -1142,13 +1113,13 @@
 
     saveStateToLocal() {
       try {
-        localStorage.setItem(`grimoire_state_${this.roomId}`, JSON.stringify(this.state));
+        localStorage.setItem(`alpairus_state_${this.roomId}`, JSON.stringify(this.state));
       } catch (e) {}
     }
 
     loadStateFromLocal() {
       try {
-        const saved = localStorage.getItem(`grimoire_state_${this.roomId}`);
+        const saved = localStorage.getItem(`alpairus_state_${this.roomId}`);
         if (saved) {
           const parsed = JSON.parse(saved);
           this.state = { ...DEFAULT_STATE, ...parsed };
@@ -1164,9 +1135,9 @@
 
   // Bootstrap when DOM is ready
   document.addEventListener('DOMContentLoaded', () => {
-    const app = new GrimoireApp();
+    const app = new AlPairusApp();
     app.init();
-    window.grimoire = app; // Accessible in console for debugging
+    window.alPairus = app; // Accessible in console for debugging
   });
 
 })();
